@@ -91,7 +91,7 @@ def friendsfeed(request):
         print(post_to_like)
         #make sure only 1person can like once
         like_already_exists = Like.objects.filter(post_id=post_to_like,username=request.user)
-        if not like_already_exists():
+        if not like_already_exists.exists():
             Like.objects.create(post_id=post_to_like,username=request.user)
             return redirect("FeedApp:friendsfeed")
 
@@ -146,17 +146,19 @@ def friends(request):
 
     #process all sent req (note: send_requests object is checkboxes in html), value of checkbox is id of the profile
     if request.method == 'POST' and request.POST.get("send_requests"):
-        #list of people/ids who are recivers of friend req
+        #list of people/ids who are recivers of friend req , check boxes selected
         receivers  = request.POST.getlist("send_requests")
+        print(receivers) 
         for receiver in receivers:
             receiver_profile = Profile.objects.get(id=receiver)
             Relationship.objects.create(sender=user_profile,receiver=receiver_profile,status='sent')
         return redirect('FeedApp:friends')
 
+    #to process all received requests
     #process all req that has been received
     if request.method == 'POST' and request.POST.get("receive_requests"):
         #list of people/ids who are senders of friend req
-        senders  = request.POST.getlist("friend_requests")
+        senders  = request.POST.getlist("receive_requests")
         for sender in senders:
             #update the relationship model for the sender to status 'accepted'
             Relationship.objects.filter(id=sender).update(status='accepted')
